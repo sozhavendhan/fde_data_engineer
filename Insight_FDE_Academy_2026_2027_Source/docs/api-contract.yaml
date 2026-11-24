@@ -1,0 +1,71 @@
+openapi: 3.0.3
+info:
+  title: FDE Academy proposed API — not implemented
+  version: 0.1.0
+security:
+  - bearerAuth: []
+paths:
+  /api/modules:
+    get:
+      summary: List versioned curriculum for authenticated users
+      responses:
+        '200': {description: Module list with objectives and resource links}
+        '401': {description: Invalid or missing access token}
+  /api/me/progress:
+    get:
+      summary: Read authenticated learner module and roadmap progress
+      responses:
+        '200': {description: Progress with concurrency versions}
+    put:
+      summary: Upsert own progress using If-Match version
+      responses:
+        '200': {description: Updated progress}
+        '409': {description: Concurrent edit conflict}
+  /api/me/worklogs:
+    get:
+      summary: List own work logs
+      responses:
+        '200': {description: Paginated work logs}
+    post:
+      summary: Create own validated work log and audit event
+      responses:
+        '201': {description: Created work log}
+        '400': {description: Validation failed}
+  /api/me/worklogs/{id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+    put:
+      summary: Update own log with If-Match concurrency check
+      responses:
+        '200': {description: Updated log}
+        '403': {description: Not the owner}
+        '409': {description: Concurrent edit conflict}
+    delete:
+      summary: Delete own log subject to retention and audit policy
+      responses:
+        '204': {description: Deleted or policy-controlled soft deletion}
+        '403': {description: Not authorized}
+  /api/mentor/learners/{learnerId}/reviews:
+    parameters:
+      - {name: learnerId, in: path, required: true, schema: {type: string, format: uuid}}
+    get:
+      summary: List review history for assigned learner
+      responses:
+        '200': {description: Reviews}
+        '403': {description: Mentor role or assignment missing}
+    post:
+      summary: Append review with server-calculated weighted score and readiness
+      responses:
+        '201': {description: Review and audit created}
+        '403': {description: Mentor role or assignment missing}
+  /api/leadership/insights:
+    get:
+      summary: Aggregate authorized cohort data for Leadership role
+      responses:
+        '200': {description: Aggregated metrics}
+        '403': {description: Leadership role missing}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+# Design contract only. Expand request/response schemas during API implementation.
+# Validate issuer, tenant, audience, scope, roles and record ownership on the server.
